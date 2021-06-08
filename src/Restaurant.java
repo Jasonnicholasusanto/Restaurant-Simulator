@@ -36,6 +36,7 @@ public class Restaurant {
     private final Random random = new Random();
     private double grandTotal=0;
     private double discountedGrandTotal=0;
+    private boolean discount=false;
 
     /**
      * Constructor for this class
@@ -151,7 +152,7 @@ public class Restaurant {
                 this.customerOrder();
                 this.serveFood();
                 this.callBill();
-                this.payBill();
+                this.payBill(discount);
                 running=false;
             } else {
                 System.out.println("I am sorry I don't understand, but if you are ready just yell for the waiter! " +
@@ -270,7 +271,7 @@ public class Restaurant {
     /**
      * Method which allows the customers to pay the bill after calling and seeing the bill
      */
-    public void payBill(){
+    public void payBill(boolean disc){
         boolean running=true;
 
         System.out.println("NARRATOR: Whenever you are ready to pay, please input \"pay\"");
@@ -286,7 +287,7 @@ public class Restaurant {
                     System.out.print("CUSTOMER: ");
                     String method = scanner.nextLine();
                     if(method.toLowerCase(Locale.ROOT).equals("cash")){
-                        this.cashPayment();
+                        this.cashPayment(disc);
                         invalidPay=false;
                     } else if (method.toLowerCase(Locale.ROOT).equals("card")){
                         this.cardPayment();
@@ -305,18 +306,24 @@ public class Restaurant {
     /**
      * Method which enables customers to pay with cash
      */
-    public void cashPayment(){
+    public void cashPayment(boolean disc){
         boolean running = true;
         double amountPaid=0;
+        double due;
         int[] bill = {1,2,5,10,20,50,100};
 
+        if(disc){
+            due=discountedGrandTotal;
+        } else {
+            due=grandTotal;
+        }
         while(running) {
-            if(amountPaid>grandTotal){
+            if(amountPaid>due){
                 running=false;
             } else {
                 System.out.println("NARRATOR: Enter the notes to pay. (without the dollar sign)");
                 System.out.println("NARRATOR: You have paid = "+String.format("%,.2f",amountPaid)+
-                        ", remaining = "+String.format("%,.2f",grandTotal-amountPaid)+".");
+                        ", remaining = "+String.format("%,.2f",due-amountPaid)+".");
                 System.out.println("NOTES: $1, $2, $5, $10, $20, $50, $100.");
                 System.out.print("ENTER CASH (per note): ");
                 String note = scanner.nextLine();
@@ -341,9 +348,9 @@ public class Restaurant {
             }
         }
 
-        if(amountPaid-grandTotal>0) {
-            System.out.println("WAITER: You have paid $" + amountPaid+" for $"+String.format("%,.2f",grandTotal)+
-                    ". Here is a change of $"+String.format("%,.2f",amountPaid - grandTotal) + ".");
+        if(amountPaid-due>0) {
+            System.out.println("WAITER: You have paid $" + amountPaid+" for $"+String.format("%,.2f",due)+
+                    ". Here is a change of $"+String.format("%,.2f",amountPaid - due) + ".");
         } else {
             System.out.println("WAITER: You have paid $" + String.format("%,.2f",amountPaid)+". Thank you.");
         }
@@ -482,6 +489,7 @@ public class Restaurant {
                 System.out.println("WAITER: I have changed your bill with your membership discount.");
                 membership.get(membershipNum).setFreq();
                 this.discountBill();
+                discount=true;
                 running = false;
             } else {
                 System.out.println("WAITER: I am sorry, I don't think you are in our membership list. Feel free " +
@@ -538,6 +546,7 @@ public class Restaurant {
                             System.out.println("WAITER: We have provided a discount for you. This is the new bill.");
                             this.discountBill();
                             running=false;
+                            discount=true;
                             break;
                         }
                     }
